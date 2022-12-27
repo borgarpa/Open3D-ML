@@ -48,7 +48,13 @@ class Custom3DPCDSplit(BaseDatasetSplit):
 
     def get_data(self, idx):
         pc_path = self.path_list[idx]
-        pcd = PyntCloud.from_file(pc_path)
+        pcd = PyntCloud.from_file(pc_path).points
+        
+        # sanity check to remove 'object' field from annotated point clouds
+        try:
+            pcd = pcd.drop(columns=['object'])
+        except:
+            pass
         data = pcd.points.to_numpy().astype(np.float32)
         
         points = data[:, :3]
