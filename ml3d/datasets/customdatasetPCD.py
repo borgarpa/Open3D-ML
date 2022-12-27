@@ -72,7 +72,7 @@ class Custom3DPCDSplit(BaseDatasetSplit):
 
     def get_attr(self, idx):
         pc_path = Path(self.path_list[idx])
-        name = pc_path.name.replace('.npy', '')
+        name = pc_path.name.replace('.pcd', '')
 
         attr = {'name': name, 'path': str(pc_path), 'split': self.split}
 
