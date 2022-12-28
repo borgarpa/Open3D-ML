@@ -18,15 +18,12 @@ log = logging.getLogger(__name__)
 
 class Custom3DSplit(BaseDatasetSplit):
     """This class is used to create a custom dataset split.
-
     Initialize the class.
-
     Args:
         dataset: The dataset to split.
         split: A string identifying the dataset split that is usually one of
         'training', 'test', 'validation', or 'all'.
         **kwargs: The configuration of the model as keyword arguments.
-
     Returns:
         A dataset split object providing the requested subset of the data.
     """
@@ -46,15 +43,21 @@ class Custom3DSplit(BaseDatasetSplit):
 
     def get_data(self, idx):
         pc_path = self.path_list[idx]
-        data = np.load(pc_path)
-        points = np.array(data[:, :3], dtype=np.float32)
+        pcd = PyntCloud.from_file(pc_path).points
+        pcd = pcd.drop(columns=['object'], errors='ignore') # sanity check to remove 'object' field from annotated point clouds
 
         if (self.split != 'test'):
-            labels = np.array(data[:, 3], dtype=np.int32)
+            data = pcd.points.to_numpy().astype(np.float32)
+            
+            points = data[:, :3]
+            labels = data[:, 3]
             feat = data[:, 4:] if data.shape[1] > 4 else None
         else:
-            feat = np.array(data[:, 3:],
-                            dtype=np.float32) if data.shape[1] > 3 else None
+            pcd = pcd.drop(columns=['label'], errors='ignore')
+            data = pcd.points.to_numpy().astype(np.float32)
+            
+            points = data[:, :3]
+            feat = data[:, 3:] if data.shape[1] > 3 else None
             labels = np.zeros((points.shape[0],), dtype=np.int32)
 
         data = {'point': points, 'feat': feat, 'label': labels}
@@ -63,7 +66,7 @@ class Custom3DSplit(BaseDatasetSplit):
 
     def get_attr(self, idx):
         pc_path = Path(self.path_list[idx])
-        name = pc_path.name.replace('.npy', '')
+        name = pc_path.name.replace('.pcd', '')
 
         attr = {'name': name, 'path': str(pc_path), 'split': self.split}
 
@@ -75,7 +78,6 @@ class Custom3D(BaseDataset):
     feed data when training a model. This inherits all functions from the base
     dataset and can be modified by users. Initialize the function by passing the
     dataset and other details.
-
     Args:
         dataset_path: The path to the dataset to use.
         name: The name of the dataset.
@@ -88,7 +90,7 @@ class Custom3D(BaseDataset):
 
     def __init__(self,
                  dataset_path,
-                 name='Custom3D',
+                 name='Custom3DPCD',
                  cache_dir='./logs/cache',
                  use_cache=False,
                  num_points=65536,
@@ -119,38 +121,30 @@ class Custom3D(BaseDataset):
         self.val_dir = str(Path(cfg.dataset_path) / cfg.val_dir)
         self.test_dir = str(Path(cfg.dataset_path) / cfg.test_dir)
 
-        self.train_files = [f for f in glob.glob(self.train_dir + "/*.npy")]
-        self.val_files = [f for f in glob.glob(self.val_dir + "/*.npy")]
-        self.test_files = [f for f in glob.glob(self.test_dir + "/*.npy")]
+        self.train_files = [f for f in glob.glob(self.train_dir + "/*.pcd")]
+        self.val_files = [f for f in glob.glob(self.val_dir + "/*.pcd")]
+        self.test_files = [f for f in glob.glob(self.test_dir + "/*.pcd")]
 
     @staticmethod
     def get_label_to_names():
         """Returns a label to names dictionary object.
-
         Returns:
             A dict where keys are label numbers and
             values are the corresponding names.
         """
         label_to_names = {
             0: 'Unclassified',
-            1: 'Ground',
-            2: 'Road_markings',
-            3: 'Natural',
-            4: 'Building',
-            5: 'Utility_line',
-            6: 'Pole',
-            7: 'Car',
-            8: 'Fence'
+            1: 'Patas',
+            2: 'Reposabrazos',
+            3: 'Asiento'
         }
         return label_to_names
 
     def get_split(self, split):
         """Returns a dataset split.
-
         Args:
             split: A string identifying the dataset split that is usually one of
             'training', 'test', 'validation', or 'all'.
-
         Returns:
             A dataset split object providing the requested subset of the data.
         """
@@ -158,14 +152,11 @@ class Custom3D(BaseDataset):
 
     def get_split_list(self, split):
         """Returns a dataset split.
-
         Args:
             split: A string identifying the dataset split that is usually one of
             'training', 'test', 'validation', or 'all'.
-
         Returns:
             A dataset split object providing the requested subset of the data.
-
         Raises:
              ValueError: Indicates that the split name passed is incorrect. The
              split name should be one of 'training', 'test', 'validation', or
@@ -188,11 +179,9 @@ class Custom3D(BaseDataset):
 
     def is_tested(self, attr):
         """Checks if a datum in the dataset has been tested.
-
         Args:
             dataset: The current dataset to which the datum belongs to.
             attr: The attribute that needs to be checked.
-
         Returns:
             If the dataum attribute is tested, then return the path where the
             attribute is stored; else, returns false.
@@ -209,7 +198,6 @@ class Custom3D(BaseDataset):
 
     def save_test_result(self, results, attr):
         """Saves the output of a model.
-
         Args:
             results: The output of a model for the datum associated with the attribute passed.
             attr: The attributes that correspond to the outputs passed in results.
