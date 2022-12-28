@@ -49,14 +49,14 @@ class Custom3DSplit(BaseDatasetSplit):
         pcd = pcd.drop(columns=['object'], errors='ignore') # sanity check to remove 'object' field from annotated point clouds
 
         if (self.split != 'test'):
-            data = pcd.points.to_numpy().astype(np.float32)
+            data = pcd.to_numpy().astype(np.float32)
             
             points = data[:, :3]
             labels = data[:, 3]
             feat = data[:, 4:] if data.shape[1] > 4 else None
         else:
             pcd = pcd.drop(columns=['label'], errors='ignore')
-            data = pcd.points.to_numpy().astype(np.float32)
+            data = pcd.to_numpy().astype(np.float32)
             
             points = data[:, :3]
             feat = data[:, 3:] if data.shape[1] > 3 else None
