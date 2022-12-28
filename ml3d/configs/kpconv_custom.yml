@@ -1,6 +1,6 @@
 dataset:
-  name: Custom3DPCD
-  dataset_path: data/customdataset
+  name: Custom3D
+  dataset_path: data/dataset
   cache_dir: workdir/checkpoints
   class_weights: [151165, 28934, 603579]
   ignored_label_inds:
