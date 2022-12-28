@@ -1,5 +1,5 @@
 dataset:
-  name: Custom3D
+  name: Custom3DPCD
   dataset_path: data/customdataset
   cache_dir: workdir/checkpoints
   class_weights: [151165, 28934, 603579]
