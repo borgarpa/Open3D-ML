@@ -229,4 +229,4 @@ class Custom3DPCD(BaseDataset):
         np.save(store_path, pred)
 
 
-DATASET._register_module(Custom3D)
+DATASET._register_module(Custom3DPCD)
