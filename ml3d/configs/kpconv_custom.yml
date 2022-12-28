@@ -1,0 +1,92 @@
+dataset:
+  name: Custom3DPCD
+  dataset_path: data/customdataset
+  cache_dir: workdir/checkpoints
+  class_weights: [151165, 28934, 603579]
+  ignored_label_inds:
+  - 0
+  train_dir: ./train
+  val_dir: ./test
+  test_dir: ./test
+  test_result_folder: ./test_res
+  use_cache: false
+model:
+  name: KPFCNN
+#   ckpt_path: workdir/checkpoints/checkpoint/ckpt-325 #.data-00000-of-00001
+  KP_extent: 1.2
+  KP_influence: linear
+  aggregation_mode: sum
+  architecture:
+  - simple
+  - resnetb
+  - resnetb_strided
+  - resnetb
+  - resnetb
+  - resnetb_strided
+  - resnetb
+  - resnetb
+  - resnetb_strided
+  - resnetb
+  - resnetb
+  - resnetb_strided
+  - resnetb
+  - nearest_upsample
+  - unary
+  - nearest_upsample
+  - unary
+  - nearest_upsample
+  - unary
+  - nearest_upsample
+  - unary
+  augment_color: 0.8
+  augment_noise: 0.001
+  augment_rotation: vertical
+  augment_scale_anisotropic: true
+  augment_scale_max: 1.2
+  augment_scale_min: 0.8
+  augment_symmetries:
+  - true
+  - false
+  - false
+  batch_limit: 50000
+  batch_norm_momentum: 0.98
+  batcher: ConcatBatcher
+  conv_radius: 2.5
+  deform_fitting_mode: point2point
+  deform_fitting_power: 1.0
+  deform_radius: 6.0
+  density_parameter: 5.0
+  first_features_dim: 128
+  first_subsampling_dl: 0.06
+  fixed_kernel_points: center
+  ignored_label_inds:
+  - 0
+  in_features_dim: 3 # Add intensity and elevation?
+  in_points_dim: 3
+  in_radius: 4.0
+  lbl_values: [0, 1, 2, 3]
+  min_in_points: 10000
+  max_in_points: 20000
+  modulated: false
+  num_classes: 3
+  num_kernel_points: 15
+  num_layers: 5
+  repulse_extent: 1.2
+  use_batch_norm: true
+pipeline:
+  name: SemanticSegmentation
+  adam_lr: 0.01
+  batch_size: 1
+#   load_ckpt: workdir/checkpoints/checkpoint/ckpt-325
+  learning_rate: 0.01
+  lr_decays: 0.98477
+  deform_lr_factor: 0.1
+  main_log_dir: workdir/checkpoints
+  max_epoch: 100
+  momentum: 0.98
+  save_ckpt_freq: 1
+  scheduler_gamma: 0.98477
+  test_batch_size: 1
+  train_sum_dir: train_log
+  val_batch_size: 1
+  weight_decay: 0.001
