@@ -5,6 +5,7 @@ from .s3dis import S3DIS
 from .parislille3d import ParisLille3D
 from .toronto3d import Toronto3D
 from .customdataset import Custom3D
+from .customdatasetPCD import Custom3DPCD
 from .semantic3d import Semantic3D
 from .inference_dummy import InferenceDummySplit
 from .samplers import SemSegRandomSampler, SemSegSpatiallyRegularSampler
@@ -24,7 +25,7 @@ from .matterport_objects import MatterportObjects
 
 __all__ = [
     'SemanticKITTI', 'S3DIS', 'Toronto3D', 'ParisLille3D', 'Semantic3D',
-    'Custom3D', 'utils', 'augment', 'samplers', 'KITTI', 'Waymo', 'NuScenes',
+    'Custom3D', 'Custom3DPCD', 'utils', 'augment', 'samplers', 'KITTI', 'Waymo', 'NuScenes',
     'Lyft', 'ShapeNet', 'SemSegRandomSampler', 'InferenceDummySplit',
     'SemSegSpatiallyRegularSampler', 'Argoverse', 'Scannet', 'SunRGBD',
     'MatterportObjects'
