@@ -210,7 +210,7 @@ class Custom3D(BaseDataset):
         make_dir(path)
 
         pred = results['predict_labels']
-        pred = np.array(self.label_to_names[pred])
+#         pred = np.array(self.label_to_names[pred])
 
         store_path = join(path, name + '.npy')
         np.save(store_path, pred)
