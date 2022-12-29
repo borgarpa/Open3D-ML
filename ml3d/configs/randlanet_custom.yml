@@ -40,7 +40,7 @@ pipeline:
   optimizer:
     lr: 0.001
   batch_size: 2
-  main_log_dir: ./logs
+  log_dir: ./logs
   max_epoch: 200
   save_ckpt_freq: 3
   scheduler_gamma: 0.99
