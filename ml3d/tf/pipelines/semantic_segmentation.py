@@ -14,9 +14,7 @@ from ..modules.metrics import SemSegMetric
 from ..dataloaders import TFDataloader
 from ...utils import make_dir, PIPELINE, get_runid, code2md
 
-print("TEST 1 ---------------")
 log = logging.getLogger(__name__)
-print("TEST 2 ---------------")
 
 class SemanticSegmentation(BasePipeline):
     """This class allows you to perform semantic segmentation for both training
