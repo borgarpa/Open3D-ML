@@ -51,14 +51,14 @@ class Custom3DSplit(BaseDatasetSplit):
         if (self.split != 'test'):
             data = pcd.to_numpy().astype(np.float32)
             
-            points = data[:, :3]
+            points = data[:, :3]*10
             labels = data[:, 3]
             feat = data[:, 4:] if data.shape[1] > 4 else None
         else:
             pcd = pcd.drop(columns=['label'], errors='ignore')
             data = pcd.to_numpy().astype(np.float32)
             
-            points = data[:, :3]
+            points = data[:, :3]*10
             feat = data[:, 3:] if data.shape[1] > 3 else None
             labels = np.zeros((points.shape[0],), dtype=np.int32)
 
