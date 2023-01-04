@@ -121,6 +121,7 @@ class SemanticSegmentation(BasePipeline):
     def run_inference(self, data):
         """Run the inference using the data passed."""
         model = self.model
+        print("running inference")
         log.info("running inference")
 
         model.inference_begin(data)
@@ -135,6 +136,8 @@ class SemanticSegmentation(BasePipeline):
         metric.update(
             tf.convert_to_tensor(model.inference_result['predict_scores']),
             tf.convert_to_tensor(data['label']))
+        print(f"Accuracy : {metric.acc()}")
+        print(f"IoU : {metric.iou()}")
         log.info(f"Accuracy : {metric.acc()}")
         log.info(f"IoU : {metric.iou()}")
 
@@ -150,10 +153,12 @@ class SemanticSegmentation(BasePipeline):
         timestamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
         log_file_path = join(cfg.logs_dir, 'log_test_' + timestamp + '.txt')
+        print("Logging in file : {}".format(log_file_path))
         log.info("Logging in file : {}".format(log_file_path))
         log.addHandler(logging.FileHandler(log_file_path))
 
         record_summary = cfg.get('summary').get('record_for', [])
+        print("Started testing")
         log.info("Started testing")
 
         metric = SemSegMetric()
@@ -178,7 +183,11 @@ class SemanticSegmentation(BasePipeline):
 
         accs = metric.acc()
         ious = metric.iou()
-
+        print("Per class Accuracy : {}".format(accs[:-1]))
+        print("Per class IOUs : {}".format(ious[:-1]))
+        print("Overall Accuracy : {:.3f}".format(accs[-1]))
+        print("Overall IOU : {:.3f}".format(ious[-1]))
+        
         log.info("Per class Accuracy : {}".format(accs[:-1]))
         log.info("Per class IOUs : {}".format(ious[:-1]))
         log.info("Overall Accuracy : {:.3f}".format(accs[-1]))
@@ -191,9 +200,11 @@ class SemanticSegmentation(BasePipeline):
 
         cfg = self.cfg
 
+        print(model)
         log.info(model)
         timestamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         log_file_path = join(cfg.logs_dir, 'log_train_' + timestamp + '.txt')
+        print("Logging in file : {}".format(log_file_path))
         log.info("Logging in file : {}".format(log_file_path))
         log.addHandler(logging.FileHandler(log_file_path))
 
@@ -225,6 +236,7 @@ class SemanticSegmentation(BasePipeline):
 
         writer = tf.summary.create_file_writer(self.tensorboard_dir)
         self.save_config(writer)
+        print("Writing summary in {}.".format(self.tensorboard_dir))
         log.info("Writing summary in {}.".format(self.tensorboard_dir))
         record_summary = cfg.get('summary').get('record_for', [])
         self.optimizer = model.get_optimizer(cfg)
@@ -233,6 +245,7 @@ class SemanticSegmentation(BasePipeline):
         self.load_ckpt(model.cfg.ckpt_path, is_resume=is_resume)
 
         for epoch in range(0, cfg.max_epoch + 1):
+            print("=== EPOCH {}/{} ===".format(epoch, cfg.max_epoch))
             log.info("=== EPOCH {}/{} ===".format(epoch, cfg.max_epoch))
             # --------------------- training
             self.metric_train.reset()
@@ -467,6 +480,13 @@ class SemanticSegmentation(BasePipeline):
             'Validation IoU': val_iou
         } for iou, val_iou in zip(train_ious, val_ious)]
 
+        print(f"loss train: {loss_dict['Training loss']:.3f} "
+                 f" eval: {loss_dict['Validation loss']:.3f}")
+        print(f"acc train: {acc_dicts[-1]['Training accuracy']:.3f} "
+                 f" eval: {acc_dicts[-1]['Validation accuracy']:.3f}")
+        print(f"iou train: {iou_dicts[-1]['Training IoU']:.3f} "
+                 f" eval: {iou_dicts[-1]['Validation IoU']:.3f}")
+        
         log.info(f"loss train: {loss_dict['Training loss']:.3f} "
                  f" eval: {loss_dict['Validation loss']:.3f}")
         log.info(f"acc train: {acc_dicts[-1]['Training accuracy']:.3f} "
@@ -514,19 +534,24 @@ class SemanticSegmentation(BasePipeline):
 
         if ckpt_path is not None:
             self.ckpt.restore(ckpt_path).expect_partial()
+            print("Restored from {}".format(ckpt_path))
             log.info("Restored from {}".format(ckpt_path))
         else:
             self.ckpt.restore(self.manager.latest_checkpoint)
 
             if self.manager.latest_checkpoint and is_resume:
+                print("Restored from {}".format(
+                    self.manager.latest_checkpoint))
                 log.info("Restored from {}".format(
                     self.manager.latest_checkpoint))
             else:
+                print("Initializing from scratch.")
                 log.info("Initializing from scratch.")
 
     def save_ckpt(self, epoch):
         """Save a checkpoint at the passed epoch."""
         save_path = self.manager.save()
+        print("Saved checkpoint at: {}".format(save_path))
         log.info("Saved checkpoint at: {}".format(save_path))
 
     def save_config(self, writer):
