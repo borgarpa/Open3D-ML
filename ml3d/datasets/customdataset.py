@@ -141,13 +141,13 @@ class Custom3D(BaseDataset):
         self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
         self.ignored_labels = np.array(cfg.ignored_label_inds)
 
-        self.train_dir = str(Path(cfg.dataset_path) / cfg.train_dir)
-        self.val_dir = str(Path(cfg.dataset_path) / cfg.val_dir)
-        self.test_dir = str(Path(cfg.dataset_path) / cfg.test_dir)
-        
         ###########################
         # Importante
         #--------------------------
+        self.train_dir = str(Path(cfg.dataset_path) / cfg.train_dir) # Nombre de la carpeta de entrenamiento
+        self.val_dir = str(Path(cfg.dataset_path) / cfg.val_dir) # Nombre de la carpeta de validación
+        self.test_dir = str(Path(cfg.dataset_path) / cfg.test_dir) # Nombre de la carpeta de testeo
+
         ### Buscamos las nubes de puntos utilizando el paquete glob, que recorre todas las subcarpetas
         # contenidos en una carpeta y devuelve un listado con todos los archivos terminados en ".pcd",
         # es decir, las nubes de puntos:
