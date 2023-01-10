@@ -70,7 +70,7 @@ class Custom3DSplit(BaseDatasetSplit):
             
             ### 4. Extraemos la información XYZ, las etiquetas y el color de los puntos
             points = data[:, :3]*3 # XYZ
-            labels = data[:, 3] # etiquetas
+            labels = data[:, 3].astype(np.int32) # etiquetas
             feat = data[:, 4:] if data.shape[1] > 4 else None # color
         
         ### Si es testeo, se repiten los pasos anteriores, pero las etiquetas no se consideran
