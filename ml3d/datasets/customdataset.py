@@ -14,9 +14,17 @@ from ..utils import make_dir, DATASET
 log = logging.getLogger(__name__)
 
 # Expect point clouds to be in npy format with train, val and test files in separate folders.
-# Expected format of npy files : ['x', 'y', 'z', 'class', 'feat_1', 'feat_2', ........,'feat_n'].
+# Expected format of pcd files : ['x', 'y', 'z', 'class', 'feat_1', 'feat_2', ........,'feat_n'].
 # For test files, format should be : ['x', 'y', 'z', 'feat_1', 'feat_2', ........,'feat_n'].
 
+###########################
+# Importante
+#--------------------------
+### Aquí debemos crear dos clases:
+# -  BaseDatosSplit: encargada de cargar y pre-procesar las nubes de puntos
+# -  BaseDatos: encargada de separar los sets de entrenamiento, validación y testeo, así como de listar los archivos de cada set
+#--------------------------
+###########################
 
 class Custom3DSplit(BaseDatasetSplit):
     """This class is used to create a custom dataset split.
@@ -42,30 +50,44 @@ class Custom3DSplit(BaseDatasetSplit):
 
     def __len__(self):
         return len(self.path_list)
-
+    
+    ###########################
+    # Importante
+    #--------------------------
     def get_data(self, idx):
+        
+        ### 1. Extraemos el elemento "idx" de la lista "self.path_list", la cual contiene las rutas de las nubes de puntos
         pc_path = self.path_list[idx]
+        
+        ### 2. Cargamos la nube de puntos usando PyntCloud
         pcd = PyntCloud.from_file(pc_path).points
-        pcd = pcd.drop(columns=['object'], errors='ignore') # sanity check to remove 'object' field from annotated point clouds
-
+        pcd = pcd.drop(columns=['object'], errors='ignore') # Eliminamos columnas no deseadas (p.e., "object")
+        
+        ### Si es entrenamiento o validación (!= "test")
         if (self.split != 'test'):
+            ### 3. Pasamos los datos a una matriz de numpy
             data = pcd.to_numpy().astype(np.float32)
             
-            points = data[:, :3]*3
-            labels = data[:, 3]
-            feat = data[:, 4:] if data.shape[1] > 4 else None
+            ### 4. Extraemos la información XYZ, las etiquetas y el color de los puntos
+            points = data[:, :3]*3 # XYZ
+            labels = data[:, 3] # etiquetas
+            feat = data[:, 4:] if data.shape[1] > 4 else None # color
+        
+        ### Si es testeo, se repiten los pasos anteriores, pero las etiquetas no se consideran
         else:
             pcd = pcd.drop(columns=['label'], errors='ignore')
             data = pcd.to_numpy().astype(np.float32)
             
-            points = data[:, :3]*3
-            feat = data[:, 3:] if data.shape[1] > 3 else None
-            labels = np.zeros((points.shape[0],), dtype=np.int32)
+            points = data[:, :3]*3 # XYZ
+            feat = data[:, 3:] if data.shape[1] > 3 else None # color
+            labels = np.zeros((points.shape[0],), dtype=np.int32) # etiquetas: todas con valor cero (np.zeros)
 
         data = {'point': points, 'feat': feat, 'label': labels}
 
         return data
-
+    #--------------------------
+    ###########################
+    
     def get_attr(self, idx):
         pc_path = Path(self.path_list[idx])
         name = pc_path.name.replace('.pcd', '')
@@ -122,11 +144,22 @@ class Custom3D(BaseDataset):
         self.train_dir = str(Path(cfg.dataset_path) / cfg.train_dir)
         self.val_dir = str(Path(cfg.dataset_path) / cfg.val_dir)
         self.test_dir = str(Path(cfg.dataset_path) / cfg.test_dir)
+        
+        ###########################
+        # Importante
+        #--------------------------
+        ### Buscamos las nubes de puntos utilizando el paquete glob, que recorre todas las subcarpetas
+        # contenidos en una carpeta y devuelve un listado con todos los archivos terminados en ".pcd",
+        # es decir, las nubes de puntos:
+        self.train_files = [f for f in glob.glob(self.train_dir + "/*.pcd")] # Lista los archivos ".pcd" que se encuentran en "self.train_dir"
+        self.val_files = [f for f in glob.glob(self.val_dir + "/*.pcd")] # Lista los archivos ".pcd" que se encuentran en "self.val_dir"
+        self.test_files = [f for f in glob.glob(self.test_dir + "/*.pcd")] # Lista los archivos ".pcd" que se encuentran en "self.test_dir"
+        #--------------------------
+        ###########################
 
-        self.train_files = [f for f in glob.glob(self.train_dir + "/*.pcd")]
-        self.val_files = [f for f in glob.glob(self.val_dir + "/*.pcd")]
-        self.test_files = [f for f in glob.glob(self.test_dir + "/*.pcd")]
-
+    ###########################
+    # Importante
+    #--------------------------
     @staticmethod
     def get_label_to_names():
         """Returns a label to names dictionary object.
@@ -134,6 +167,7 @@ class Custom3D(BaseDataset):
             A dict where keys are label numbers and
             values are the corresponding names.
         """
+        ### Aquí simplemente creamos un diccionario que relaciona el valor numérico de la etiqueta con su nombre (p.e., 1 -> 'Patas')
         label_to_names = {
             0: 'Unclassified',
             1: 'Patas',
@@ -141,7 +175,9 @@ class Custom3D(BaseDataset):
             3: 'Asiento'
         }
         return label_to_names
-
+    #--------------------------
+    ###########################
+    
     def get_split(self, split):
         """Returns a dataset split.
         Args:
@@ -210,7 +246,6 @@ class Custom3D(BaseDataset):
         make_dir(path)
 
         pred = results['predict_labels']
-#         pred = np.array(self.label_to_names[pred])
 
         store_path = join(path, name + '.npy')
         np.save(store_path, pred)
