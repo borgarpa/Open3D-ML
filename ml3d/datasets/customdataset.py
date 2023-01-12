@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 # Importante
 #--------------------------
 ### Aquí debemos crear dos clases:
-# -  BaseDatosSplit: encargada de cargar y pre-procesar las nubes de puntos
-# -  BaseDatos: encargada de separar los sets de entrenamiento, validación y testeo, así como de listar los archivos de cada set
+# -  Custom3D (nombre arbitrario): encargada de separar los sets de entrenamiento, validación y testeo, así como de listar los archivos de cada set
+# -  Custom3DSplit (nombre arbitrario): encargada de cargar y pre-procesar las nubes de puntos
 #--------------------------
 ###########################
 
