@@ -177,7 +177,10 @@ class Custom3D(BaseDataset):
         return label_to_names
     #--------------------------
     ###########################
-    
+   
+    ###########################
+    # Importante
+    #--------------------------
     def get_split(self, split):
         """Returns a dataset split.
         Args:
@@ -187,7 +190,9 @@ class Custom3D(BaseDataset):
             A dataset split object providing the requested subset of the data.
         """
         return Custom3DSplit(self, split=split)
-
+    #--------------------------
+    ###########################
+    
     def get_split_list(self, split):
         """Returns a dataset split.
         Args:
